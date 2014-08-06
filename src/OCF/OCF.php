@@ -42,6 +42,20 @@ abstract class OCF
         }
     }
 
+    /**
+     * @return bool
+     */
+    public function validateProperties()
+    {
+        try {
+            new \Raven_Client($this->sentryDSN);
+        } catch (\InvalidArgumentException $e) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function initSentry()
     {
         if ($this->sentryDSN) {
@@ -60,46 +74,58 @@ abstract class OCF
     public function run($method)
     {
         $this->initProperties();
+        if (!$this->validateProperties()) {
+            exit (self::OCF_ERR_CONFIGURED);
+        }
         $this->initSentry();
 
         $method = 'action-' . $method;
         $method = $this->convertToCamelCase($method);
         if (method_exists($this, $method)) {
-            $this->$method();
+            $returnCode = $this->$method();
+            exit($returnCode);
+        } else {
+            exit(self::OCF_ERR_UNIMPLEMENTED);
         }
     }
 
     /**
      * @timeout 10
+     * @return int
      */
     public function actionStart()
     {
-
+        return self::OCF_ERR_UNIMPLEMENTED;
     }
 
     /**
      * @timeout 10
+     * @return int
      */
     public function actionStop()
     {
-
+        return self::OCF_ERR_UNIMPLEMENTED;
     }
 
     /**
      * @timeout 10
      * @interval 10
+     * @return int
      */
     public function actionMonitor()
     {
-
+        return self::OCF_ERR_UNIMPLEMENTED;
     }
 
     /**
      * @timeout 5
+     * @return int
      */
     public function actionValidateAll()
     {
-
+        // validation perform on every run before any action
+        // reaching this point means everything is correct
+        return self::OCF_SUCCESS;
     }
 
     public function actionMetaData()
@@ -144,7 +170,9 @@ abstract class OCF
         $methods = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
         foreach ($methods as $method) {
             $declaringClass = $method->getDeclaringClass();
-            if ($declaringClass->name != __CLASS__ && strpos($method->name, 'action') === 0) {
+            if (($declaringClass->name != __CLASS__ || $method->name == 'actionValidateAll') &&
+                strpos($method->name, 'action') === 0
+            ) {
                 $action = $actions->addChild('action');
                 $actionName = str_replace('action', '', $method->name);
                 $actionName[0] = strtolower($actionName[0]);
@@ -170,16 +198,24 @@ abstract class OCF
      */
     protected function convertToCamelCase($string)
     {
-        return preg_replace_callback('/-(\w)/', function ($matches) {
+        return preg_replace_callback(
+            '/-(\w)/',
+            function ($matches) {
                 return strtoupper($matches[1]);
-            }, strtolower($string));
+            },
+            strtolower($string)
+        );
     }
 
     protected function convertFromCamelCase($string)
     {
-        return preg_replace_callback('/([A-Z])/', function ($matches) {
+        return preg_replace_callback(
+            '/([A-Z])/',
+            function ($matches) {
                 return '-' . strtolower($matches[1]);
-            }, $string);
+            },
+            $string
+        );
     }
 
     /**
@@ -216,6 +252,7 @@ abstract class OCF
         return null;
     }
 
+
     /**
      * @param DocBlock $docBlock
      * @param \SimpleXMLElement $xmlElement
@@ -230,5 +267,35 @@ abstract class OCF
             $longDesc = $xmlElement->addChild('longdesc', $docBlock->getLongDescription()->getContents());
             $longDesc->addAttribute('lang', $this->language);
         }
+    }
+
+    protected function setAttribute($name, $value)
+    {
+        $command = "attrd_updater -n " . escapeshellarg($name) . ' -v ' . escapeshellarg($value);
+        exec($command, $output, $exitCode);
+        if ($exitCode) {
+            $this->ravenClient->extra_context(['command' => $command, 'output' => $output, 'exitCode' => $exitCode]);
+            $this->ravenClient->captureException(new \Exception('attrd_updater exit code non zero'));
+            return self::OCF_ERR_GENERIC;
+        }
+
+        return self::OCF_SUCCESS;
+    }
+
+    /**
+     * @param string $name
+     * @return int
+     */
+    protected function removeAttribute($name)
+    {
+        $command = "attrd_updater -D -n " . escapeshellarg($name);
+        exec($command, $output, $exitCode);
+        if ($exitCode) {
+            $this->ravenClient->extra_context(['command' => $command, 'output' => $output, 'exitCode' => $exitCode]);
+            $this->ravenClient->captureException(new \Exception('attrd_updater exit code non zero'));
+            return self::OCF_ERR_GENERIC;
+        }
+
+        return self::OCF_SUCCESS;
     }
 }

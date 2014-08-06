@@ -10,7 +10,6 @@
         }
     ],
     "require": {
-        "m8rge/curl-helper": "~1.3",
         "raven/raven": "dev-master",
         "phpdocumentor/reflection-docblock": "~2.0.2"
     }
