@@ -41,7 +41,7 @@ class ServiceCheck extends OCF
      * The name of the attributes to set.  This is the name to be used in the constraints.
      * @var string
      */
-    public $scoreAttr = 'fe-score';
+    public $scoreAttr = 'srv-score';
 
     /**
      * Success regex match score
@@ -53,7 +53,7 @@ class ServiceCheck extends OCF
 
     public function validateProperties()
     {
-        $res =  parent::validateProperties();
+        $res = parent::validateProperties();
         if ($res) {
             if (!is_numeric($this->score)) {
                 return false;
@@ -89,12 +89,15 @@ class ServiceCheck extends OCF
     public function actionMonitor()
     {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Host: ' . $this->hostName]);
-        curl_setopt_array($ch, array(
+        curl_setopt_array(
+            $ch,
+            [
+                CURLOPT_URL => $this->url,
+                CURLOPT_HTTPHEADER => ['Host: ' . $this->hostName],
                 CURLOPT_CONNECTTIMEOUT => 5,
                 CURLOPT_RETURNTRANSFER => true,
-            ));
+            ]
+        );
         $data = curl_exec($ch);
         if ($data === false) {
             return $this->setAttribute($this->scoreAttr, 0);

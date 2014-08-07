@@ -6,6 +6,6 @@ php /usr/bin/phar.phar pack \
 -s pharStub.php \
 -c gz \
 -i "index\.php|src|vendor" \
--x "\.git|tests?|\.DS_Store|README*|AUTHORS|CHANGES|Makefile|phpunit\.xml*|\.travis\.yml|composer*" \
+-x "\.git|tests?|\.DS_Store|README*|AUTHORS|CHANGES|Makefile|phpunit\.xml*|\.travis\.yml|composer\.+" \
 ./..
 chmod +x bin/servicecheck.phar

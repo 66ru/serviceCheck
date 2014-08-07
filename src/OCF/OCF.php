@@ -14,8 +14,10 @@ abstract class OCF
     const OCF_ERR_INSTALLED = 5;
     const OCF_ERR_CONFIGURED = 6;
     const OCF_NOT_RUNNING = 7;
-    const OCF_RUNNING_MASTER = 8;
-    const OCF_FAILED_MASTER = 9;
+
+    // Non-standard values
+//    const OCF_RUNNING_MASTER = 8;
+//    const OCF_FAILED_MASTER = 9;
 
     protected $version = '0.1';
     protected $language = 'en';
@@ -196,7 +198,7 @@ abstract class OCF
      * @param $string
      * @return string|null
      */
-    protected function convertToCamelCase($string)
+    protected function convertToCamelCase($string) //todo: extract to helper
     {
         return preg_replace_callback(
             '/-(\w)/',
@@ -207,7 +209,7 @@ abstract class OCF
         );
     }
 
-    protected function convertFromCamelCase($string)
+    protected function convertFromCamelCase($string) //todo: extract to helper
     {
         return preg_replace_callback(
             '/([A-Z])/',
@@ -222,7 +224,7 @@ abstract class OCF
      * @param string $phpDocType
      * @return string
      */
-    protected function convertToOcfType($phpDocType)
+    protected function convertToOcfType($phpDocType) //todo: extract to helper
     {
         $type = 'string';
 
@@ -240,7 +242,7 @@ abstract class OCF
      * @param string $name
      * @return null|string
      */
-    protected function getTag($docBlock, $name)
+    protected function getTag($docBlock, $name) //todo: extract to extension of DocBlock
     {
         $tags = $docBlock->getTagsByName($name);
         if ($tags) {
@@ -257,7 +259,7 @@ abstract class OCF
      * @param DocBlock $docBlock
      * @param \SimpleXMLElement $xmlElement
      */
-    protected function setDescriptions($docBlock, $xmlElement)
+    protected function setDescriptions($docBlock, $xmlElement) //todo: extract to extension of DocBlock
     {
         if ($docBlock->getShortDescription()) {
             $shortDesc = $xmlElement->addChild('shortdesc', $docBlock->getShortDescription());
