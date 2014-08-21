@@ -1,6 +1,6 @@
 {
-    "name": "m8rge/ocf",
-    "description": "OCF (open cluster framework) resource agent class",
+    "name": "m8rge/service-check-ra",
+    "description": "ocf resource agent that checks url for regex match and write result to cib",
     "minimum-stability": "dev",
     "license": "MIT",
     "authors": [
@@ -10,7 +10,6 @@
         }
     ],
     "require": {
-        "raven/raven": "dev-master",
-        "phpdocumentor/reflection-docblock": "~2.0.2"
+        "66ru/ocf-resource-agent": "dev-master"
     }
 }

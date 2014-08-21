@@ -2,7 +2,7 @@
 
 /** @var \Composer\Autoload\ClassLoader $autoLoader */
 $autoLoader = require_once 'vendor/autoload.php';
-$autoLoader->addPsr4('m8rge\\', 'src');
+$autoLoader->addPsr4('m8rge\\OCF\\', '');
 
 if ($argc == 2 && !empty($argv[1])) {
     $action = $argv[1];
