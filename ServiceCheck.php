@@ -91,12 +91,12 @@ class ServiceCheck extends OCF
         $ch = curl_init();
         curl_setopt_array(
             $ch,
-            [
+            array(
                 CURLOPT_URL => $this->url,
-                CURLOPT_HTTPHEADER => ['Host: ' . $this->hostName],
+                CURLOPT_HTTPHEADER => array('Host: ' . $this->hostName),
                 CURLOPT_CONNECTTIMEOUT => 5,
                 CURLOPT_RETURNTRANSFER => true,
-            ]
+            )
         );
         $data = curl_exec($ch);
         if ($data === false) {
